@@ -1,4 +1,4 @@
-import React, {useCallback, useState, useEffect, useRef} from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,17 @@ import {
   Easing,
   ImageBackground,
 } from 'react-native';
-import Svg, {Path, Circle, G, Text as SvgText, Polygon, Defs, LinearGradient, Stop} from 'react-native-svg';
+import  QuaCam  from '../lottie/quacam.json';
+import Svg, {
+  Path,
+  Circle,
+  G,
+  Text as SvgText,
+  Polygon,
+  Defs,
+  LinearGradient,
+  Stop,
+} from 'react-native-svg';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -22,21 +32,38 @@ import Animated, {
   withRepeat,
   withSequence,
 } from 'react-native-reanimated';
-import {
-  Gesture,
-  GestureDetector,
-} from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LottieView from 'lottie-react-native';
+import Food from '../lottie/food.json'
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const wheelSize = Math.min(width, height) * 0.7;
 const SWIPE_THRESHOLD = -200;
 
 const initialNames = [
-  'PHỞ', 'BÚN SƯỜN', 'BÁNH MÌ', 'CHẢ CÁ', 'CUỐN THỊT HEO', 'BÚN CÁ',
-  'BÚN CHẢ', 'SÚP CUA', 'SUSHI', 'MÌ', 'BÁNH CUỐN', 'BÚN RIÊU',
-  'BÚN TRỘN', 'CƠM RANG', 'GÀ RÁN', 'BÚN BÒ', 'NEM NƯỚNG', 'BÁNH CANH',
-  'MIẾN LƯƠN', 'CƠM TẤM', 'CƠM VP', 'ĂN SẠCH',
+  'PHỞ',
+  'BÚN SƯỜN',
+  'BÁNH MÌ',
+  'CHẢ CÁ',
+  'CUỐN THỊT HEO',
+  'BÚN CÁ',
+  'BÚN CHẢ',
+  'SÚP CUA',
+  'SUSHI',
+  'MÌ',
+  'BÁNH CUỐN',
+  'BÚN RIÊU',
+  'BÚN TRỘN',
+  'CƠM RANG',
+  'GÀ RÁN',
+  'BÚN BÒ',
+  'NEM NƯỚNG',
+  'BÁNH CANH',
+  'MIẾN LƯƠN',
+  'CƠM TẤM',
+  'CƠM VP',
+  'ĂN SẠCH',
 ];
 
 const WheelOfFortune = () => {
@@ -60,7 +87,7 @@ const WheelOfFortune = () => {
           setNames(initialNames);
         }
       } catch (e) {
-        console.error("Failed to load names from storage", e);
+        console.error('Failed to load names from storage', e);
         setNames(initialNames); // Fallback to initial names on error
       }
     };
@@ -77,7 +104,7 @@ const WheelOfFortune = () => {
       try {
         await AsyncStorage.setItem('names', JSON.stringify(names));
       } catch (e) {
-        console.error("Failed to save names to storage", e);
+        console.error('Failed to save names to storage', e);
       }
     };
     saveNames();
@@ -88,7 +115,7 @@ const WheelOfFortune = () => {
     sparkleAnimation.value = withRepeat(
       withTiming(1, { duration: 2000 }),
       -1,
-      true
+      true,
     );
   }, []);
 
@@ -107,8 +134,8 @@ const WheelOfFortune = () => {
 
   const wheelStyle = useAnimatedStyle(() => ({
     transform: [
-      {rotate: `${rotation.value}deg`},
-      {scale: scaleAnimation.value}
+      { rotate: `${rotation.value}deg` },
+      { scale: scaleAnimation.value },
     ],
   }));
 
@@ -116,7 +143,7 @@ const WheelOfFortune = () => {
     const opacity = interpolate(
       sparkleAnimation.value,
       [0, 0.5, 1],
-      [0.3, 1, 0.3]
+      [0.3, 1, 0.3],
     );
     return { opacity };
   });
@@ -133,13 +160,13 @@ const WheelOfFortune = () => {
       isSpinning.value = true;
       scaleAnimation.value = withSequence(
         withTiming(1.1, { duration: 200 }),
-        withTiming(1, { duration: 200 })
+        withTiming(1, { duration: 200 }),
       );
       const randomRotation =
         rotation.value + Math.floor(Math.random() * 360) + 2160;
       rotation.value = withSpring(
         randomRotation,
-        {damping: 10, stiffness: 1, mass: 0.1},
+        { damping: 10, stiffness: 1, mass: 0.1 },
         () => {
           runOnJS(setIsSpinning)(false);
           runOnJS(determineWinner)(randomRotation);
@@ -167,8 +194,16 @@ const WheelOfFortune = () => {
     if (total === 0) {
       return [
         {
-          path: `M${wheelSize / 2},${wheelSize / 2} m-${wheelSize / 2}, 0 a${wheelSize / 2},${wheelSize / 2} 0 1,0 ${wheelSize},0 a${wheelSize / 2},${wheelSize / 2} 0 1,0 -${wheelSize},0`,
-          color: ['#333', '#555'], name: '', angle: 0, isSingle: false, index: 0
+          path: `M${wheelSize / 2},${wheelSize / 2} m-${wheelSize / 2}, 0 a${
+            wheelSize / 2
+          },${wheelSize / 2} 0 1,0 ${wheelSize},0 a${wheelSize / 2},${
+            wheelSize / 2
+          } 0 1,0 -${wheelSize},0`,
+          color: ['#333', '#555'],
+          name: '',
+          angle: 0,
+          isSingle: false,
+          index: 0,
         },
       ];
     }
@@ -176,20 +211,45 @@ const WheelOfFortune = () => {
     if (total === 1) {
       return [
         {
-          path: `M${wheelSize / 2},${wheelSize / 2} m-${wheelSize / 2}, 0 a${wheelSize / 2},${wheelSize / 2} 0 1,0 ${wheelSize},0 a${wheelSize / 2},${wheelSize / 2} 0 1,0 -${wheelSize},0`,
-          color: colors[0 % colors.length], name: names[0], angle: 0, isSingle: true, index: 0
+          path: `M${wheelSize / 2},${wheelSize / 2} m-${wheelSize / 2}, 0 a${
+            wheelSize / 2
+          },${wheelSize / 2} 0 1,0 ${wheelSize},0 a${wheelSize / 2},${
+            wheelSize / 2
+          } 0 1,0 -${wheelSize},0`,
+          color: colors[0 % colors.length],
+          name: names[0],
+          angle: 0,
+          isSingle: true,
+          index: 0,
         },
       ];
     }
 
     return names.map((name, index) => {
       const angle = index * angleSize;
-      const x1 = (Math.cos(((angle - 90) * Math.PI) / 180) * wheelSize) / 2 + wheelSize / 2;
-      const y1 = (Math.sin(((angle - 90) * Math.PI) / 180) * wheelSize) / 2 + wheelSize / 2;
-      const x2 = (Math.cos(((angle + angleSize - 90) * Math.PI) / 180) * wheelSize) / 2 + wheelSize / 2;
-      const y2 = (Math.sin(((angle + angleSize - 90) * Math.PI) / 180) * wheelSize) / 2 + wheelSize / 2;
-      const path = `M${wheelSize / 2},${wheelSize / 2} L${x1},${y1} A${wheelSize / 2},${wheelSize / 2} 0 0,1 ${x2},${y2} Z`;
-      return { path, color: colors[index % colors.length], name, angle, isSingle: false, index };
+      const x1 =
+        (Math.cos(((angle - 90) * Math.PI) / 180) * wheelSize) / 2 +
+        wheelSize / 2;
+      const y1 =
+        (Math.sin(((angle - 90) * Math.PI) / 180) * wheelSize) / 2 +
+        wheelSize / 2;
+      const x2 =
+        (Math.cos(((angle + angleSize - 90) * Math.PI) / 180) * wheelSize) / 2 +
+        wheelSize / 2;
+      const y2 =
+        (Math.sin(((angle + angleSize - 90) * Math.PI) / 180) * wheelSize) / 2 +
+        wheelSize / 2;
+      const path = `M${wheelSize / 2},${wheelSize / 2} L${x1},${y1} A${
+        wheelSize / 2
+      },${wheelSize / 2} 0 0,1 ${x2},${y2} Z`;
+      return {
+        path,
+        color: colors[index % colors.length],
+        name,
+        angle,
+        isSingle: false,
+        index,
+      };
     });
   };
 
@@ -197,7 +257,7 @@ const WheelOfFortune = () => {
     setNames(currentNames => currentNames.filter((_, i) => i !== index));
   }, []);
 
-  const NameItem = React.memo(({item, index}) => {
+  const NameItem = React.memo(({ item, index }) => {
     const translateX = useSharedValue(0);
     const panGesture = Gesture.Pan()
       .onUpdate(event => {
@@ -206,43 +266,35 @@ const WheelOfFortune = () => {
       .onEnd(() => {
         const deleteWidth = -width;
         if (translateX.value < SWIPE_THRESHOLD) {
-          translateX.value = withTiming(
-            deleteWidth,
-            { duration: 250 },
-            () => { runOnJS(removeName)(index); },
-          );
+          translateX.value = withTiming(deleteWidth, { duration: 250 }, () => {
+            runOnJS(removeName)(index);
+          });
         } else {
           translateX.value = withTiming(0);
         }
       });
 
     const rStyle = useAnimatedStyle(() => ({
-      transform: [{translateX: translateX.value}],
+      transform: [{ translateX: translateX.value }],
     }));
 
     const deleteIconStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(
-        translateX.value,
-        [0, SWIPE_THRESHOLD / 2],
-        [0, 1]
-      ),
-      transform: [{
-        translateX: interpolate(
-          translateX.value,
-          [0, SWIPE_THRESHOLD],
-          [50, 0]
-        )
-      }]
+      opacity: interpolate(translateX.value, [0, SWIPE_THRESHOLD / 2], [0, 1]),
+      transform: [
+        {
+          translateX: interpolate(
+            translateX.value,
+            [0, SWIPE_THRESHOLD],
+            [50, 0],
+          ),
+        },
+      ],
     }));
 
     return (
       <View style={styles.nameItemWrapper}>
         <Animated.View style={[styles.deleteBackground, deleteIconStyle]}>
-          <Svg
-            width="30"
-            height="30"
-            viewBox="0 0 24 24"
-            fill="none">
+          <Svg width="30" height="30" viewBox="0 0 24 24" fill="none">
             <Path
               d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2m-6 5v6m4-6v6"
               stroke="#fff"
@@ -253,7 +305,7 @@ const WheelOfFortune = () => {
           </Svg>
           <Text style={styles.deleteText}>Xóa</Text>
         </Animated.View>
-        
+
         <GestureDetector gesture={panGesture}>
           <Animated.View style={[styles.nameItem, rStyle]}>
             <View style={styles.nameItemContent}>
@@ -267,36 +319,66 @@ const WheelOfFortune = () => {
   });
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <ImageBackground
         style={styles.backgroundImage}
-        source={require('../images/foodback.png')}>
-        
+        source={require('../images/foodback.png')}
+      >
         <View style={styles.header}>
           <Text style={styles.heading}>🍽️ Trưa nay ăn gì? 🍽️</Text>
-          <Text style={styles.subHeading}>Xoay bánh xe để khám phá món ngon!</Text>
+          <Text style={styles.subHeading}>
+            Xoay bánh xe để khám phá món ngon!
+          </Text>
         </View>
 
         <View style={styles.wheelWrapper}>
           <Animated.View style={sparkleStyle}>
             <View style={styles.sparkleContainer}>
               <Text style={styles.sparkle}>✨</Text>
-              <Text style={[styles.sparkle, {position: 'absolute', top: 20, right: 10}]}>⭐</Text>
-              <Text style={[styles.sparkle, {position: 'absolute', bottom: 20, left: 10}]}>💫</Text>
-              <Text style={[styles.sparkle, {position: 'absolute', top: 50, left: -10}]}>🌟</Text>
+              <Text
+                style={[
+                  styles.sparkle,
+                  { position: 'absolute', top: 20, right: 10 },
+                ]}
+              >
+                ⭐
+              </Text>
+              <Text
+                style={[
+                  styles.sparkle,
+                  { position: 'absolute', bottom: 20, left: 10 },
+                ]}
+              >
+                💫
+              </Text>
+              <Text
+                style={[
+                  styles.sparkle,
+                  { position: 'absolute', top: 50, left: -10 },
+                ]}
+              >
+                🌟
+              </Text>
             </View>
           </Animated.View>
-          
+
           <Animated.View style={[styles.wheelContainer, wheelStyle]}>
             <View style={styles.wheelShadow} />
             <Svg
               height={wheelSize}
               width={wheelSize}
-              viewBox={`0 0 ${wheelSize} ${wheelSize}`}>
+              viewBox={`0 0 ${wheelSize} ${wheelSize}`}
+            >
               <Defs>
                 {createWheelPaths().map((segment, index) => (
-                  <LinearGradient key={index} id={`grad${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                  <LinearGradient
+                    key={index}
+                    id={`grad${index}`}
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
                     <Stop offset="0%" stopColor={segment.color[0]} />
                     <Stop offset="100%" stopColor={segment.color[1]} />
                   </LinearGradient>
@@ -304,8 +386,8 @@ const WheelOfFortune = () => {
               </Defs>
               {createWheelPaths().map((segment, index) => (
                 <G key={index}>
-                  <Path 
-                    d={segment.path} 
+                  <Path
+                    d={segment.path}
                     fill={`url(#grad${index})`}
                     stroke="#fff"
                     strokeWidth="2"
@@ -313,15 +395,18 @@ const WheelOfFortune = () => {
                   <SvgText
                     x={wheelSize / 2}
                     y={wheelSize / 2}
-                    fontSize={names.length > 15 ? "10" : "14"}
+                    fontSize={names.length > 15 ? '10' : '14'}
                     fill="#fff"
                     fontWeight="bold"
                     textAnchor="middle"
                     stroke="#ffffffff"
                     strokeWidth="0.5"
-                    transform={
-                      `rotate(${segment.angle + (180 / (names.length || 1))}, ${wheelSize / 2}, ${wheelSize / 2}) translate(0, -${wheelSize / 3}) rotate(90, ${wheelSize / 2}, ${wheelSize / 2})`
-                    }>
+                    transform={`rotate(${
+                      segment.angle + 180 / (names.length || 1)
+                    }, ${wheelSize / 2}, ${wheelSize / 2}) translate(0, -${
+                      wheelSize / 3
+                    }) rotate(90, ${wheelSize / 2}, ${wheelSize / 2})`}
+                  >
                     {segment.name}
                   </SvgText>
                 </G>
@@ -335,24 +420,40 @@ const WheelOfFortune = () => {
                 strokeWidth="3"
                 onPress={spinWheel}
               />
-              <SvgText
+              {/* <SvgText
                 x={wheelSize / 2}
                 y={wheelSize / 2}
                 fontSize="12"
                 fill="#fff"
                 fontWeight="bold"
-                textAnchor="middle">
+                textAnchor="middle"
+              >
                 SPIN
-              </SvgText>
+              </SvgText> */}
+              <LottieView
+                source={Food}
+                autoPlay
+                loop
+                style={{
+                  width: 60,
+                  height: 60,
+                  position: 'absolute',
+                  top: wheelSize / 2 - 30,
+                  left: wheelSize / 2 - 30,
+                }}
+              />
             </Svg>
           </Animated.View>
-          
-          <Svg
-            height="50"
-            width="40"
-            style={styles.pointerSvg}>
+
+          <Svg height="50" width="40" style={styles.pointerSvg}>
             <Defs>
-              <LinearGradient id="pointerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <LinearGradient
+                id="pointerGrad"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <Stop offset="0%" stopColor="#FFD700" />
                 <Stop offset="100%" stopColor="#FFA000" />
               </LinearGradient>
@@ -367,8 +468,18 @@ const WheelOfFortune = () => {
           </Svg>
         </View>
 
+        
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Thêm món ăn mới</Text>
+            <View style={{flexDirection:'row', justifyContent:'center', alignItems:'center'}}>
+                <LottieView
+          source={QuaCam}
+          autoPlay 
+          loop 
+          style={{ width: 70, height: 70, backgroundColor:'transparent' }}
+        />
+               <Text style={styles.inputLabel}>Thêm món ăn mới</Text> 
+            </View>
+          
           <View style={styles.inputContainer}>
             <TextInput
               cursorColor="#FF6B6B"
@@ -386,7 +497,9 @@ const WheelOfFortune = () => {
         </View>
 
         <View style={styles.listSection}>
-          <Text style={styles.listTitle}>Danh sách món ăn ({names.length})</Text>
+          <Text style={styles.listTitle}>
+            Danh sách món ăn ({names.length})
+          </Text>
           <ScrollView style={styles.listContainer}>
             {names.map((item, index) => (
               <NameItem key={index.toString()} item={item} index={index} />
@@ -396,9 +509,9 @@ const WheelOfFortune = () => {
       </ImageBackground>
     </ScrollView>
   );
-}
+};
 
-export default WheelOfFortune
+export default WheelOfFortune;
 
 const styles = StyleSheet.create({
   container: {
@@ -406,8 +519,8 @@ const styles = StyleSheet.create({
     minHeight: height,
   },
   backgroundImage: {
-    flex: 1, 
-    width: '100%', 
+    flex: 1,
+    width: '100%',
     alignItems: 'center',
     paddingVertical: 20,
   },
@@ -422,7 +535,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: {width: 2, height: 2},
+    textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 4,
   },
   subHeading: {
@@ -432,7 +545,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontStyle: 'italic',
     textShadowColor: 'rgba(0, 0, 0, 0.6)',
-    textShadowOffset: {width: 1, height: 1},
+    textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
   wheelWrapper: {
@@ -473,7 +586,7 @@ const styles = StyleSheet.create({
     right: -15,
     zIndex: 10,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 3},
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.4,
     shadowRadius: 6,
     elevation: 15,
@@ -489,13 +602,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: {width: 1, height: 1},
+    textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
   },
   inputContainer: {
     flexDirection: 'row',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 10,
@@ -520,7 +633,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     borderRadius: 25,
     shadowColor: '#FF6B6B',
-    shadowOffset: {width: 0, height: 4},
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 8,
@@ -539,7 +652,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: {width: 1, height: 1},
+    textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
   },
   listContainer: {
@@ -574,7 +687,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 15,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
