@@ -13,7 +13,7 @@ const Wellcome = ({ navigation }) => {
   }, [navigation]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffffff' }}>
       <LottieView
         source={Loading}
         autoPlay
