@@ -1,4 +1,4 @@
-package com.truanayangi
+package com.kenhtao.lunch
 
 import android.app.Application
 import com.facebook.react.PackageList
