@@ -446,6 +446,7 @@ const WheelOfFortune = () => {
                     top: wheelSize / 2 - 30,
                     left: wheelSize / 2 - 30,
                   }}
+                  
                 />
               </Svg>
             </Animated.View>
