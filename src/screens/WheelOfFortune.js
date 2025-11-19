@@ -10,6 +10,7 @@ import {
   Alert,
   Easing,
   ImageBackground,
+  Modal,
 } from 'react-native';
 import  QuaCam  from '../lottie/quacam.json';
 import Svg, {
@@ -69,6 +70,8 @@ const initialNames = [
 const WheelOfFortune = () => {
   const [names, setNames] = useState([]);
   const [newName, setNewName] = useState('');
+  const [showWinner, setShowWinner] = useState(false);
+  const [winnerText, setWinnerText] = useState('');
 
   const rotation = useSharedValue(0);
   const isSpinning = useSharedValue(false);
@@ -184,7 +187,8 @@ const WheelOfFortune = () => {
     const adjustedRotation = (finalRotation - 90) % 360;
     const winnerIndex = Math.floor(adjustedRotation / sliceAngle);
     const safeWinnerIndex = (names.length - 1 - winnerIndex) % names.length;
-    Alert.alert(`Bạn sẽ ăn ${names[safeWinnerIndex]} vào trưa nay!`);
+    setWinnerText(names[safeWinnerIndex]);
+    setShowWinner(true);
   };
 
   const createWheelPaths = () => {
@@ -319,195 +323,237 @@ const WheelOfFortune = () => {
   });
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <ImageBackground
-        style={styles.backgroundImage}
-        source={require('../images/foodback.png')}
-      >
-        <View style={styles.header}>
-          <Text style={styles.heading}>🍽️ Trưa nay ăn gì? 🍽️</Text>
-          <Text style={styles.subHeading}>
-            Xoay bánh xe để khám phá món ngon!
-          </Text>
-        </View>
+    <>
+      <ScrollView contentContainerStyle={styles.container}>
+        <ImageBackground
+          style={styles.backgroundImage}
+          source={require('../images/foodback.png')}
+        >
+          <View style={styles.header}>
+            <Text style={styles.heading}>🍽️ Trưa nay ăn gì? 🍽️</Text>
+            <Text style={styles.subHeading}>
+              Xoay bánh xe để khám phá món ngon!
+            </Text>
+          </View>
 
-        <View style={styles.wheelWrapper}>
-          <Animated.View style={sparkleStyle}>
-            <View style={styles.sparkleContainer}>
-              <Text style={styles.sparkle}>✨</Text>
-              <Text
-                style={[
-                  styles.sparkle,
-                  { position: 'absolute', top: 20, right: 10 },
-                ]}
-              >
-                ⭐
-              </Text>
-              <Text
-                style={[
-                  styles.sparkle,
-                  { position: 'absolute', bottom: 20, left: 10 },
-                ]}
-              >
-                💫
-              </Text>
-              <Text
-                style={[
-                  styles.sparkle,
-                  { position: 'absolute', top: 50, left: -10 },
-                ]}
-              >
-                🌟
-              </Text>
-            </View>
-          </Animated.View>
+          <View style={styles.wheelWrapper}>
+            <Animated.View style={sparkleStyle}>
+              <View style={styles.sparkleContainer}>
+                <Text style={styles.sparkle}>✨</Text>
+                <Text
+                  style={[
+                    styles.sparkle,
+                    { position: 'absolute', top: 20, right: 10 },
+                  ]}
+                >
+                  ⭐
+                </Text>
+                <Text
+                  style={[
+                    styles.sparkle,
+                    { position: 'absolute', bottom: 20, left: 10 },
+                  ]}
+                >
+                  💫
+                </Text>
+                <Text
+                  style={[
+                    styles.sparkle,
+                    { position: 'absolute', top: 50, left: -10 },
+                  ]}
+                >
+                  🌟
+                </Text>
+              </View>
+            </Animated.View>
 
-          <Animated.View style={[styles.wheelContainer, wheelStyle]}>
-            <View style={styles.wheelShadow} />
-            <Svg
-              height={wheelSize}
-              width={wheelSize}
-              viewBox={`0 0 ${wheelSize} ${wheelSize}`}
-            >
-              <Defs>
+            <Animated.View style={[styles.wheelContainer, wheelStyle]}>
+              <View style={styles.wheelShadow} />
+              <Svg
+                height={wheelSize}
+                width={wheelSize}
+                viewBox={`0 0 ${wheelSize} ${wheelSize}`}
+              >
+                <Defs>
+                  {createWheelPaths().map((segment, index) => (
+                    <LinearGradient
+                      key={index}
+                      id={`grad${index}`}
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      <Stop offset="0%" stopColor={segment.color[0]} />
+                      <Stop offset="100%" stopColor={segment.color[1]} />
+                    </LinearGradient>
+                  ))}
+                </Defs>
                 {createWheelPaths().map((segment, index) => (
-                  <LinearGradient
-                    key={index}
-                    id={`grad${index}`}
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="100%"
-                  >
-                    <Stop offset="0%" stopColor={segment.color[0]} />
-                    <Stop offset="100%" stopColor={segment.color[1]} />
-                  </LinearGradient>
+                  <G key={index}>
+                    <Path
+                      d={segment.path}
+                      fill={`url(#grad${index})`}
+                      stroke="#fff"
+                      strokeWidth="2"
+                    />
+                    <SvgText
+                      x={wheelSize / 2}
+                      y={wheelSize / 2}
+                      fontSize={names.length > 15 ? '10' : '14'}
+                      fill="#fff"
+                      fontWeight="bold"
+                      textAnchor="middle"
+                      stroke="#ffffffff"
+                      strokeWidth="0.5"
+                      transform={`rotate(${
+                        segment.angle + 180 / (names.length || 1)
+                      }, ${wheelSize / 2}, ${wheelSize / 2}) translate(0, -${
+                        wheelSize / 3
+                      }) rotate(90, ${wheelSize / 2}, ${wheelSize / 2})`}
+                    >
+                      {segment.name}
+                    </SvgText>
+                  </G>
                 ))}
+                <Circle
+                  cx={wheelSize / 2}
+                  cy={wheelSize / 2}
+                  r="30"
+                  fill="url(#centerGrad)"
+                  stroke="#FFD700"
+                  strokeWidth="3"
+                  onPress={spinWheel}
+                />
+                {/* <SvgText
+                  x={wheelSize / 2}
+                  y={wheelSize / 2}
+                  fontSize="12"
+                  fill="#fff"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                >
+                  SPIN
+                </SvgText> */}
+                <LottieView
+                  source={Food}
+                  autoPlay
+                  loop
+                  style={{
+                    width: 60,
+                    height: 60,
+                    position: 'absolute',
+                    top: wheelSize / 2 - 30,
+                    left: wheelSize / 2 - 30,
+                  }}
+                />
+              </Svg>
+            </Animated.View>
+
+            <Svg height="50" width="40" style={styles.pointerSvg}>
+              <Defs>
+                <LinearGradient
+                  id="pointerGrad"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
+                  <Stop offset="0%" stopColor="#FFD700" />
+                  <Stop offset="100%" stopColor="#FFA000" />
+                </LinearGradient>
               </Defs>
-              {createWheelPaths().map((segment, index) => (
-                <G key={index}>
-                  <Path
-                    d={segment.path}
-                    fill={`url(#grad${index})`}
-                    stroke="#fff"
-                    strokeWidth="2"
-                  />
-                  <SvgText
-                    x={wheelSize / 2}
-                    y={wheelSize / 2}
-                    fontSize={names.length > 15 ? '10' : '14'}
-                    fill="#fff"
-                    fontWeight="bold"
-                    textAnchor="middle"
-                    stroke="#ffffffff"
-                    strokeWidth="0.5"
-                    transform={`rotate(${
-                      segment.angle + 180 / (names.length || 1)
-                    }, ${wheelSize / 2}, ${wheelSize / 2}) translate(0, -${
-                      wheelSize / 3
-                    }) rotate(90, ${wheelSize / 2}, ${wheelSize / 2})`}
-                  >
-                    {segment.name}
-                  </SvgText>
-                </G>
-              ))}
-              <Circle
-                cx={wheelSize / 2}
-                cy={wheelSize / 2}
-                r="30"
-                fill="url(#centerGrad)"
-                stroke="#FFD700"
-                strokeWidth="3"
-                onPress={spinWheel}
-              />
-              {/* <SvgText
-                x={wheelSize / 2}
-                y={wheelSize / 2}
-                fontSize="12"
-                fill="#fff"
-                fontWeight="bold"
-                textAnchor="middle"
-              >
-                SPIN
-              </SvgText> */}
-              <LottieView
-                source={Food}
-                autoPlay
-                loop
-                style={{
-                  width: 60,
-                  height: 60,
-                  position: 'absolute',
-                  top: wheelSize / 2 - 30,
-                  left: wheelSize / 2 - 30,
-                }}
+              <Polygon
+                points="30,5 50,60 10,60"
+                fill="url(#pointerGrad)"
+                stroke="#fff"
+                strokeWidth="2"
+                transform={`rotate(270, 30, 32.5)`}
               />
             </Svg>
-          </Animated.View>
+          </View>
 
-          <Svg height="50" width="40" style={styles.pointerSvg}>
-            <Defs>
-              <LinearGradient
-                id="pointerGrad"
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="100%"
-              >
-                <Stop offset="0%" stopColor="#FFD700" />
-                <Stop offset="100%" stopColor="#FFA000" />
-              </LinearGradient>
-            </Defs>
-            <Polygon
-              points="30,5 50,60 10,60"
-              fill="url(#pointerGrad)"
-              stroke="#fff"
-              strokeWidth="2"
-              transform={`rotate(270, 30, 32.5)`}
-            />
-          </Svg>
-        </View>
-
-        
-        <View style={styles.inputSection}>
-            <View style={{flexDirection:'row', justifyContent:'center', alignItems:'center'}}>
-                <LottieView
-          source={QuaCam}
-          autoPlay 
-          loop 
-          style={{ width: 70, height: 70, backgroundColor:'transparent' }}
-        />
-               <Text style={styles.inputLabel}>Thêm món ăn mới</Text> 
-            </View>
           
-          <View style={styles.inputContainer}>
-            <TextInput
-              cursorColor="#FF6B6B"
-              selectionColor="#FF6B6B"
-              placeholder="Nhập tên món ăn..."
-              placeholderTextColor="#999"
-              value={newName}
-              onChangeText={setNewName}
-              style={styles.input}
+          <View style={styles.inputSection}>
+              <View style={{flexDirection:'row', justifyContent:'center', alignItems:'center'}}>
+                  <LottieView
+            source={QuaCam}
+            autoPlay 
+            loop 
+            style={{ width: 70, height: 70, backgroundColor:'transparent' }}
+          />
+                 <Text style={styles.inputLabel}>Thêm món ăn mới</Text> 
+              </View>
+            
+            <View style={styles.inputContainer}>
+              <TextInput
+                cursorColor="#FF6B6B"
+                selectionColor="#FF6B6B"
+                placeholder="Nhập tên món ăn..."
+                placeholderTextColor="#999"
+                value={newName}
+                onChangeText={setNewName}
+                style={styles.input}
+              />
+              <TouchableOpacity style={styles.addButton} onPress={addName}>
+                <Text style={styles.buttonText}>➕</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.listSection}>
+            <Text style={styles.listTitle}>
+              Danh sách món ăn ({names.length})
+            </Text>
+            <ScrollView style={styles.listContainer}>
+              {names.map((item, index) => (
+                <NameItem key={index.toString()} item={item} index={index} />
+              ))}
+            </ScrollView>
+          </View>
+        </ImageBackground>
+      </ScrollView>
+
+      {/* Custom Winner Modal */}
+      <Modal
+        visible={showWinner}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowWinner(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <LottieView
+              source={Food}
+              autoPlay
+              loop
+              style={styles.winnerLottie}
             />
-            <TouchableOpacity style={styles.addButton} onPress={addName}>
-              <Text style={styles.buttonText}>➕</Text>
+            
+            <Text style={styles.congratsText}>🎉 Chúc mừng! 🎉</Text>
+            
+            <View style={styles.winnerTextContainer}>
+              <Text style={styles.winnerMainText}>Bạn sẽ ăn</Text>
+              <Text style={styles.winnerFoodText}>{winnerText}</Text>
+              <Text style={styles.winnerMainText}>vào trưa nay!</Text>
+            </View>
+            
+            <View style={styles.celebrationEmojis}>
+              <Text style={styles.emoji}>🍽️</Text>
+              <Text style={styles.emoji}>✨</Text>
+              <Text style={styles.emoji}>🥳</Text>
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setShowWinner(false)}
+            >
+              <Text style={styles.closeButtonText}>Tuyệt vời!</Text>
             </TouchableOpacity>
           </View>
         </View>
-
-        <View style={styles.listSection}>
-          <Text style={styles.listTitle}>
-            Danh sách món ăn ({names.length})
-          </Text>
-          <ScrollView style={styles.listContainer}>
-            {names.map((item, index) => (
-              <NameItem key={index.toString()} item={item} index={index} />
-            ))}
-          </ScrollView>
-        </View>
-      </ImageBackground>
-    </ScrollView>
+      </Modal>
+    </>
   );
 };
 
@@ -719,6 +765,83 @@ const styles = StyleSheet.create({
   winnerText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 30,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 20,
+    width: '85%',
+    maxWidth: 350,
+  },
+  winnerLottie: {
+    width: 120,
+    height: 120,
+    marginBottom: 20,
+  },
+  congratsText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FF6B6B',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  winnerTextContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  winnerMainText: {
+    fontSize: 18,
+    color: '#333',
+    textAlign: 'center',
+  },
+  winnerFoodText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FF6B6B',
+    marginVertical: 10,
+    textAlign: 'center',
+    textShadowColor: 'rgba(255, 107, 107, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
+  celebrationEmojis: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: 25,
+  },
+  emoji: {
+    fontSize: 30,
+  },
+  closeButton: {
+    backgroundColor: '#FF6B6B',
+    paddingHorizontal: 40,
+    paddingVertical: 15,
+    borderRadius: 25,
+    shadowColor: '#FF6B6B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
