@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -37,10 +37,10 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LottieView from 'lottie-react-native';
 import Food from '../lottie/food.json'
+import FoodListScreen from './FoodListScreen';
 
 const { width, height } = Dimensions.get('window');
 const wheelSize = Math.min(width, height) * 0.7;
-const SWIPE_THRESHOLD = -200;
 
 const initialNames = [
   'PHỞ',
@@ -67,9 +67,8 @@ const initialNames = [
   'ĂN SẠCH',
 ];
 
-const WheelOfFortune = () => {
+const WheelOfFortune = ({ navigation }) => {
   const [names, setNames] = useState([]);
-  const [newName, setNewName] = useState('');
   const [showWinner, setShowWinner] = useState(false);
   const [winnerText, setWinnerText] = useState('');
 
@@ -150,13 +149,6 @@ const WheelOfFortune = () => {
     );
     return { opacity };
   });
-
-  const addName = () => {
-    if (newName.trim() !== '') {
-      setNames([...names, newName.trim()]);
-      setNewName('');
-    }
-  };
 
   const spinWheel = () => {
     if (!isSpinning.value) {
@@ -257,70 +249,7 @@ const WheelOfFortune = () => {
     });
   };
 
-  const removeName = useCallback(index => {
-    setNames(currentNames => currentNames.filter((_, i) => i !== index));
-  }, []);
 
-  const NameItem = React.memo(({ item, index }) => {
-    const translateX = useSharedValue(0);
-    const panGesture = Gesture.Pan()
-      .onUpdate(event => {
-        translateX.value = event.translationX;
-      })
-      .onEnd(() => {
-        const deleteWidth = -width;
-        if (translateX.value < SWIPE_THRESHOLD) {
-          translateX.value = withTiming(deleteWidth, { duration: 250 }, () => {
-            runOnJS(removeName)(index);
-          });
-        } else {
-          translateX.value = withTiming(0);
-        }
-      });
-
-    const rStyle = useAnimatedStyle(() => ({
-      transform: [{ translateX: translateX.value }],
-    }));
-
-    const deleteIconStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(translateX.value, [0, SWIPE_THRESHOLD / 2], [0, 1]),
-      transform: [
-        {
-          translateX: interpolate(
-            translateX.value,
-            [0, SWIPE_THRESHOLD],
-            [50, 0],
-          ),
-        },
-      ],
-    }));
-
-    return (
-      <View style={styles.nameItemWrapper}>
-        <Animated.View style={[styles.deleteBackground, deleteIconStyle]}>
-          <Svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-            <Path
-              d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2m-6 5v6m4-6v6"
-              stroke="#fff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </Svg>
-          <Text style={styles.deleteText}>Xóa</Text>
-        </Animated.View>
-
-        <GestureDetector gesture={panGesture}>
-          <Animated.View style={[styles.nameItem, rStyle]}>
-            <View style={styles.nameItemContent}>
-              <Text style={styles.nameText}>{item}</Text>
-              <Text style={styles.swipeHint}>← Vuốt để xóa</Text>
-            </View>
-          </Animated.View>
-        </GestureDetector>
-      </View>
-    );
-  });
 
   return (
     <>
@@ -475,43 +404,12 @@ const WheelOfFortune = () => {
           </View>
 
           
-          <View style={styles.inputSection}>
-              <View style={{flexDirection:'row', justifyContent:'center', alignItems:'center'}}>
-                  <LottieView
-            source={QuaCam}
-            autoPlay 
-            loop 
-            style={{ width: 70, height: 70, backgroundColor:'transparent' }}
-          />
-                 <Text style={styles.inputLabel}>Thêm món ăn mới</Text> 
-              </View>
-            
-            <View style={styles.inputContainer}>
-              <TextInput
-                cursorColor="#FF6B6B"
-                selectionColor="#FF6B6B"
-                placeholder="Nhập tên món ăn..."
-                placeholderTextColor="#999"
-                value={newName}
-                onChangeText={setNewName}
-                style={styles.input}
-              />
-              <TouchableOpacity style={styles.addButton} onPress={addName}>
-                <Text style={styles.buttonText}>➕</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.listSection}>
-            <Text style={styles.listTitle}>
-              Danh sách món ăn ({names.length})
-            </Text>
-            <ScrollView style={styles.listContainer}>
-              {names.map((item, index) => (
-                <NameItem key={index.toString()} item={item} index={index} />
-              ))}
-            </ScrollView>
-          </View>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => navigation.navigate('AddFood', { names, setNames })}
+          >
+            <Text style={styles.buttonText}>Thêm món ăn</Text>
+          </TouchableOpacity>
         </ImageBackground>
       </ScrollView>
 
@@ -563,13 +461,15 @@ export default WheelOfFortune;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    minHeight: height,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   backgroundImage: {
     flex: 1,
     width: '100%',
     alignItems: 'center',
     paddingVertical: 20,
+    justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
@@ -638,124 +538,17 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 15,
   },
-  inputSection: {
-    width: '90%',
-    marginBottom: 25,
-  },
-  inputLabel: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 10,
-  },
-  input: {
-    flex: 1,
-    height: 50,
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    color: '#333',
-    fontSize: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 107, 107, 0.3)',
-  },
   addButton: {
     backgroundColor: '#FF6B6B',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 50,
-    height: 50,
-    marginLeft: 10,
+    paddingHorizontal: 30,
+    paddingVertical: 15,
     borderRadius: 25,
-    shadowColor: '#FF6B6B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 8,
+    marginBottom: 20,
   },
   buttonText: {
-    fontSize: 20,
-  },
-  listSection: {
-    width: '100%',
-    flex: 1,
-  },
-  listTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
-  },
-  listContainer: {
-    paddingHorizontal: 50,
-  },
-  nameItemWrapper: {
-    position: 'relative',
-    marginBottom: 10,
-  },
-  deleteBackground: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    bottom: 0,
-    width: 100,
-    backgroundColor: '#FF4757',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 15,
-    flexDirection: 'row',
-  },
-  deleteText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginLeft: 5,
-  },
-  nameItem: {
-    justifyContent: 'center',
-    height: 55,
-    paddingHorizontal: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF6B6B',
-  },
-  nameItemContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  nameText: {
-    color: '#333',
+    color: 'white',
     fontSize: 16,
-    fontWeight: '600',
-    flex: 1,
-  },
-  swipeHint: {
-    color: '#999',
-    fontSize: 10,
-    fontStyle: 'italic',
+    fontWeight: 'bold',
   },
   winnerContainer: {
     marginTop: 20,
