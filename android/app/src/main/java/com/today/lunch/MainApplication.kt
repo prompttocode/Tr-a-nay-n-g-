@@ -1,4 +1,4 @@
-package com.kenhtao.lunch
+package com.today.lunch
 
 import android.app.Application
 import com.facebook.react.PackageList

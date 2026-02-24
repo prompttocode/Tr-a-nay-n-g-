@@ -1,4 +1,4 @@
-package com.kenhtao.lunch
+package com.today.lunch
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

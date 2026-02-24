@@ -71,6 +71,7 @@ const WheelOfFortune = ({ navigation }) => {
   const [names, setNames] = useState([]);
   const [showWinner, setShowWinner] = useState(false);
   const [winnerText, setWinnerText] = useState('');
+  const [winnerIndex, setWinnerIndex] = useState(null);
 
   const rotation = useSharedValue(0);
   const isSpinning = useSharedValue(false);
@@ -177,10 +178,25 @@ const WheelOfFortune = ({ navigation }) => {
   const determineWinner = finalRotation => {
     const sliceAngle = 360 / names.length;
     const adjustedRotation = (finalRotation - 90) % 360;
-    const winnerIndex = Math.floor(adjustedRotation / sliceAngle);
-    const safeWinnerIndex = (names.length - 1 - winnerIndex) % names.length;
+    const winnerIdx = Math.floor(adjustedRotation / sliceAngle);
+    const safeWinnerIndex = (names.length - 1 - winnerIdx) % names.length;
+    setWinnerIndex(safeWinnerIndex);
     setWinnerText(names[safeWinnerIndex]);
     setShowWinner(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowWinner(false);
+    setWinnerIndex(null);
+  };
+
+  const removeWinner = () => {
+    if (winnerIndex !== null) {
+      setNames(currentNames =>
+        currentNames.filter((_, index) => index !== winnerIndex),
+      );
+    }
+    handleCloseModal();
   };
 
   const createWheelPaths = () => {
@@ -259,7 +275,7 @@ const WheelOfFortune = ({ navigation }) => {
           source={require('../images/foodback.png')}
         >
           <View style={styles.header}>
-            <Text style={styles.heading}>🍽️ Trưa nay ăn gì? 🍽️</Text>
+            <Text style={styles.heading}>🍽️ Hôm nay ăn gì? 🍽️</Text>
             <Text style={styles.subHeading}>
               Xoay bánh xe để khám phá món ngon!
             </Text>
@@ -418,7 +434,7 @@ const WheelOfFortune = ({ navigation }) => {
         visible={showWinner}
         transparent={true}
         animationType="fade"
-        onRequestClose={() => setShowWinner(false)}
+        onRequestClose={handleCloseModal}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -434,7 +450,7 @@ const WheelOfFortune = ({ navigation }) => {
             <View style={styles.winnerTextContainer}>
               <Text style={styles.winnerMainText}>Bạn sẽ ăn</Text>
               <Text style={styles.winnerFoodText}>{winnerText}</Text>
-              <Text style={styles.winnerMainText}>vào trưa nay!</Text>
+              <Text style={styles.winnerMainText}>vào hôm nay!</Text>
             </View>
             
             <View style={styles.celebrationEmojis}>
@@ -443,12 +459,20 @@ const WheelOfFortune = ({ navigation }) => {
               <Text style={styles.emoji}>🥳</Text>
             </View>
             
-            <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={() => setShowWinner(false)}
-            >
-              <Text style={styles.closeButtonText}>Tuyệt vời!</Text>
-            </TouchableOpacity>
+            <Text style={styles.deleteQuestionText}>Xóa món này khỏi vòng quay?</Text>
+
+            <View style={styles.modalButtonContainer}>
+                <TouchableOpacity
+                    style={[styles.modalButton, styles.deleteModalButton]}
+                    onPress={removeWinner}>
+                    <Text style={styles.modalButtonText}>Xóa</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.modalButton, styles.closeModalButton]}
+                    onPress={handleCloseModal}>
+                    <Text style={styles.modalButtonText}>Để lại</Text>
+                </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -622,20 +646,41 @@ const styles = StyleSheet.create({
   emoji: {
     fontSize: 30,
   },
-  closeButton: {
-    backgroundColor: '#FF6B6B',
-    paddingHorizontal: 40,
+  deleteQuestionText: {
+    fontSize: 16,
+    color: '#666',
+    fontStyle: 'italic',
+    marginTop: 20,
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
     paddingVertical: 15,
     borderRadius: 25,
-    shadowColor: '#FF6B6B',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+    alignItems: 'center',
+    marginHorizontal: 5,
   },
-  closeButtonText: {
+  modalButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  deleteModalButton: {
+    backgroundColor: '#FF6B6B',
+    shadowColor: '#FF6B6B',
+  },
+  closeModalButton: {
+    backgroundColor: '#4ECDC4',
+    shadowColor: '#4ECDC4',
   },
 });

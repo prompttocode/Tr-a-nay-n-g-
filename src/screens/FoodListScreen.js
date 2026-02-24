@@ -3,20 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
+  TouchableOpacity,
 } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  runOnJS,
-  interpolate,
-} from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Svg, { Path } from 'react-native-svg';
-
-const { width } = Dimensions.get('window');
-const SWIPE_THRESHOLD = -200;
 
 const FoodListScreen = ({ names, setNames }) => {
   const removeName = useCallback(index => {
@@ -24,62 +13,14 @@ const FoodListScreen = ({ names, setNames }) => {
   }, [setNames]);
 
   const NameItem = React.memo(({ item, index }) => {
-    const translateX = useSharedValue(0);
-    const panGesture = Gesture.Pan()
-      .onUpdate(event => {
-        translateX.value = event.translationX;
-      })
-      .onEnd(() => {
-        const deleteWidth = -width;
-        if (translateX.value < SWIPE_THRESHOLD) {
-          translateX.value = withTiming(deleteWidth, { duration: 250 }, () => {
-            runOnJS(removeName)(index);
-          });
-        } else {
-          translateX.value = withTiming(0);
-        }
-      });
-
-    const rStyle = useAnimatedStyle(() => ({
-      transform: [{ translateX: translateX.value }],
-    }));
-
-    const deleteIconStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(translateX.value, [0, SWIPE_THRESHOLD / 2], [0, 1]),
-      transform: [
-        {
-          translateX: interpolate(
-            translateX.value,
-            [0, SWIPE_THRESHOLD],
-            [50, 0],
-          ),
-        },
-      ],
-    }));
-
     return (
       <View style={styles.nameItemWrapper}>
-        <Animated.View style={[styles.deleteBackground, deleteIconStyle]}>
-          <Svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-            <Path
-              d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2m-6 5v6m4-6v6"
-              stroke="#fff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </Svg>
-          <Text style={styles.deleteText}>Xóa</Text>
-        </Animated.View>
-
-        <GestureDetector gesture={panGesture}>
-          <Animated.View style={[styles.nameItem, rStyle]}>
-            <View style={styles.nameItemContent}>
-              <Text style={styles.nameText}>{item}</Text>
-              <Text style={styles.swipeHint}>← Vuốt để xóa</Text>
-            </View>
-          </Animated.View>
-        </GestureDetector>
+        <View style={styles.nameItem}>
+            <Text style={styles.nameText}>{item}</Text>
+            <TouchableOpacity onPress={() => removeName(index)} style={styles.deleteButton}>
+                <Text style={styles.deleteButtonText}>Xóa</Text>
+            </TouchableOpacity>
+        </View>
       </View>
     );
   });
@@ -119,29 +60,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 50,
       },
       nameItemWrapper: {
-        position: 'relative',
         marginBottom: 10,
       },
-      deleteBackground: {
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        bottom: 0,
-        width: 100,
-        backgroundColor: '#FF4757',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 15,
-        flexDirection: 'row',
-      },
-      deleteText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: 'bold',
-        marginLeft: 5,
-      },
       nameItem: {
-        justifyContent: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         height: 55,
         paddingHorizontal: 20,
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -154,20 +78,21 @@ const styles = StyleSheet.create({
         borderLeftWidth: 4,
         borderLeftColor: '#FF6B6B',
       },
-      nameItemContent: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      },
       nameText: {
         color: '#333',
         fontSize: 16,
         fontWeight: '600',
         flex: 1,
       },
-      swipeHint: {
-        color: '#999',
-        fontSize: 10,
-        fontStyle: 'italic',
+      deleteButton: {
+          backgroundColor: '#FF4757',
+          paddingHorizontal: 15,
+          paddingVertical: 8,
+          borderRadius: 10,
       },
+      deleteButtonText: {
+          color: '#fff',
+          fontSize: 12,
+          fontWeight: 'bold',
+      }
 });

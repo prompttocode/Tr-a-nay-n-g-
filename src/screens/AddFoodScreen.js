@@ -14,11 +14,17 @@ import FoodListScreen from './FoodListScreen';
 
 const AddFoodScreen = ({ navigation, route }) => {
   const [newName, setNewName] = useState('');
-  const { names, setNames } = route.params;
+  const [internalNames, setInternalNames] = useState(route.params.names);
+  const { setNames: setParentNames } = route.params;
+
+  const updateNames = namesUpdater => {
+    setInternalNames(namesUpdater);
+    setParentNames(namesUpdater);
+  };
 
   const addName = () => {
     if (newName.trim() !== '') {
-      setNames(currentNames => [...currentNames, newName.trim()]);
+      updateNames(currentNames => [...currentNames, newName.trim()]);
       setNewName('');
     }
   };
@@ -55,7 +61,7 @@ const AddFoodScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
           </View>
-          <FoodListScreen names={names} setNames={setNames} />
+          <FoodListScreen names={internalNames} setNames={updateNames} />
         </ScrollView>
       </View>
     </ImageBackground>
